@@ -111,11 +111,23 @@
 
   /* ---------- Section heads ---------- */
   .sec{padding-top:96px}
-  .sec h2{font-size:clamp(3.4rem,8vw,8rem);margin-bottom:22px}
+  .sec h2{font-size:clamp(2.6rem,7.2vw,7.5rem);margin-bottom:22px}
   .sec .lede{font-size:1.25rem;max-width:34em;margin-bottom:56px}
   .bone .lede{color:#3a3732}
   .black .lede{color:#bcb6aa}
 
+  /* section headings: a red playhead sweeps across and reveals the letters */
+  .sec h2.big{position:relative;display:inline-block;max-width:100%}
+  .sec h2.big .hl{display:inline-block}
+  .heads .sec h2.big .hl{clip-path:inset(-10% 100% -10% 0)}
+  .heads .sec h2.big.on .hl{animation:wipe .9s cubic-bezier(.7,0,.3,1) forwards}
+  .sec h2.big::after{content:"";position:absolute;top:-6%;bottom:-6%;left:0;width:5px;background:var(--red);transform:translateX(-100%);opacity:0;pointer-events:none}
+  .red .sec h2.big::after,.band.red h2.big::after{background:#000}
+  .heads .sec h2.big.on::after{animation:playhead .9s cubic-bezier(.7,0,.3,1) forwards,headOut .3s .9s forwards}
+  @keyframes wipe{to{clip-path:inset(-10% -2% -10% 0)}}
+  @keyframes playhead{from{left:0;opacity:1}to{left:100%;opacity:1}}
+  @keyframes headOut{from{opacity:1}to{opacity:0}}
+  @media (prefers-reduced-motion:reduce){.heads .sec h2.big .hl{clip-path:none}}
   .big.caps{text-transform:uppercase;letter-spacing:-.035em}
   /* ---------- Work ---------- */
   .projects{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px;align-items:start}
@@ -208,7 +220,7 @@
   .feat strong{color:var(--bone);font-weight:700}
 
   /* ---------- Contact ---------- */
-  .contact h2{font-size:clamp(4.5rem,14vw,14rem);margin-bottom:40px}
+  .contact h2{font-size:clamp(3.2rem,11.5vw,12rem);margin-bottom:40px}
   .contact-grid{display:grid;grid-template-columns:1fr 1.3fr;gap:80px;align-items:start}
   .contact-grid p{font-size:1.35rem;line-height:1.4;font-weight:500;max-width:22em}
   .links{list-style:none}
@@ -308,7 +320,7 @@
 <!-- ============ WORK (dark grey panel) ============ -->
 <section class="band panel" id="work">
   <div class="wrap sec">
-    <h2 class="big">selected edits</h2>
+    <h2 class="big caps">selected edits</h2>
     <p class="lede">A few videos I've edited. Click one to play it.</p>
     <div class="projects" id="projectGrid"></div>
     <div class="more"><button class="btn" id="viewAll">View all videos</button></div>
@@ -361,7 +373,7 @@
 <!-- ============ PROCESS (dark grey panel) ============ -->
 <section class="band panel" id="process">
   <div class="wrap sec">
-    <h2 class="big">how i work</h2>
+    <h2 class="big caps">how i work</h2>
     <p class="lede">Five steps from your footage to a finished video, each one with the shortcut I press for it.</p>
     <div class="keys">
       <div class="step">
@@ -393,7 +405,7 @@
 <!-- ============ EXPERIENCE (black) ============ -->
 <section class="band black" id="experience">
   <div class="wrap sec">
-    <h2 class="big">experience</h2>
+    <h2 class="big caps">experience</h2>
     <p class="lede">What I've been working on, most recent first.</p>
     <ul class="exp" id="expList"></ul>
     <div class="credits"><span><b>Experience</b></span><span>Editing, game dev, VA and tech support</span><span>J<span class="dot">.</span></span></div>
@@ -403,7 +415,7 @@
 <!-- ============ ROBLOX (dark grey panel) ============ -->
 <section class="band panel" id="roblox">
   <div class="wrap sec">
-    <h2 class="big">also building</h2>
+    <h2 class="big caps">work in progress</h2>
     <p class="lede">Making Roblox games with my two-person team taught me what keeps players hooked. I use the same thinking when I edit.</p>
     <div class="game">
       <div>
@@ -427,7 +439,7 @@
 <!-- ============ CONTACT (red) ============ -->
 <section class="band red contact" id="contact">
   <div class="wrap sec">
-    <h2 class="big">let's talk.</h2>
+    <h2 class="big caps">let's talk.</h2>
     <div class="contact-grid">
       <p>Tell me about your channel or project and what you need edited. I'll reply with what I can do and how long it will take.</p>
       <ul class="links">
@@ -523,10 +535,10 @@ const EXPERIENCE = [
     tags: ["Communication", "Scheduling", "Data entry", "Time management"],
   },
   {
-    when: "", now: false,
+    when: "2023 – Present", now: true,
     role: "Computer technician",
-    where: "",
-    desc: "Diagnosed and fixed computer problems: hardware repairs and upgrades, installing and setting up software, and troubleshooting slow or broken systems.",
+    where: "Family business, part-time",
+    desc: "Diagnosing and fixing computer problems: hardware repairs and upgrades, installing and setting up software, and troubleshooting slow or broken systems.",
     tags: ["Hardware repair", "Troubleshooting", "Software setup", "Upgrades"],
   },
 ];
@@ -559,6 +571,18 @@ function render(){
 }
 render();
 
+
+/* ===== Section headings: reveal with a playhead sweep as they scroll into view ===== */
+if (!matchMedia("(prefers-reduced-motion: reduce)").matches && "IntersectionObserver" in window) {
+  document.documentElement.classList.add("heads");
+  const headWatch = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("on"); headWatch.unobserve(e.target); } });
+  }, { threshold: 0.6 });
+  document.querySelectorAll(".sec h2.big").forEach(h => {
+    h.innerHTML = '<span class="hl">' + h.innerHTML + "</span>";   // the inner layer is what gets revealed
+    headWatch.observe(h);
+  });
+}
 /* ===== Card motion: cut-in entrance and silent previews ===== */
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const canHover = matchMedia("(hover: hover) and (pointer: fine)").matches;
